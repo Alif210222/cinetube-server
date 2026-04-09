@@ -1,16 +1,245 @@
+// =========================
+// GENERATOR & DATASOURCE
+// =========================
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  
 }
 
+// =========================
+// ENUMS
+// =========================
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MembershipStatus {
+  FREE
+  PREMIUM
+  BANNED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  RENT
+  PURCHASE
+}
+
+enum PriceType {
+  FREE
+  PREMIUM
+}
+
+enum ReactionType {
+  LIKE
+}
+
+// =========================
+// USER MODEL
+// =========================
 model User {
-    id        String   @id @default(uuid())
-    email     String   @unique
-    name      String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  password           String
+  image              String?
+  role               Role     @default(USER)
+  membershipStatus   MembershipStatus @default(FREE)
+
+  reviews            Review[]
+  comments           Comment[]
+  likes              Like[]
+  watchlist          Watchlist[]
+  payments           Payment[]
+  subscriptions      Subscription[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("users")
+}
+
+// =========================
+// MOVIE / SERIES
+// =========================
+model Movie {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String
+  genres        String[]
+  releaseYear   Int
+  director      String
+  cast          String[]
+  platform      String
+  poster        String?
+  trailerUrl    String?
+  priceType     PriceType @default(FREE)
+  price         Float?
+
+  reviews       Review[]
+  watchlist     Watchlist[]
+  payments      Payment[]
+
+  avgRating     Float    @default(0)
+  totalReviews  Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([title])
+  @@index([genres])
+  @@map("movies")
+}
+
+// =========================
+// REVIEW
+// =========================
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int
+  content     String
+  isSpoiler   Boolean  @default(false)
+  tags        String[]
+
+  status      ReviewStatus @default(PENDING)
+
+  userId      String
+  movieId     String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie       Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  comments    Comment[]
+  likes       Like[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, movieId]) // one review per user per movie
+  @@map("reviews")
+}
+
+// =========================
+// COMMENT (Nested Support)
+// =========================
+model Comment {
+  id          String   @id @default(uuid())
+  content     String
+
+  userId      String
+  reviewId    String
+  parentId    String?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  parent      Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  replies     Comment[] @relation("CommentToComment")
+
+  createdAt   DateTime @default(now())
+
+  @@map("comments")
+}
+
+// =========================
+// LIKE (Reaction System)
+// =========================
+model Like {
+  id        String   @id @default(uuid())
+  type      ReactionType @default(LIKE)
+
+  userId    String
+  reviewId  String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reviewId]) // prevent multiple likes
+  @@map("likes")
+}
+
+// =========================
+// WATCHLIST
+// =========================
+model Watchlist {
+  id        String   @id @default(uuid())
+
+  userId    String
+  movieId   String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, movieId])
+  @@map("watchlists")
+}
+
+// =========================
+// PAYMENT (Stripe ভিত্তিক)
+// =========================
+model Payment {
+  id                String   @id @default(uuid())
+  amount            Float
+  currency          String   @default("usd")
+
+  status            PaymentStatus @default(PENDING)
+  type              PaymentType
+
+  stripePaymentId   String?  // PaymentIntent ID
+  clientSecret      String?  // frontend confirm করার জন্য
+
+  userId            String
+  movieId           String?
+
+  user              User     @relation(fields: [userId], references: [id])
+  movie             Movie?   @relation(fields: [movieId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([stripePaymentId])
+  @@map("payments")
+}
+
+// =========================
+// SUBSCRIPTION SYSTEM
+// =========================
+model Subscription {
+  id              String   @id @default(uuid())
+  userId          String
+
+  stripeSubId     String   @unique
+  status          PaymentStatus
+
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@map("subscriptions")
 }
