@@ -1,11 +1,11 @@
-// routes/index.ts
-// import express from "express";
-// import userRoutes from "../modules/user/user.route";
-// import movieRoutes from "../modules/movie/movie.route";
 
-// const router = express.Router();
+import express, { Router } from "express";
+import authRoutes from "../modules/auth/auth.route";
 
-// router.use("/users", userRoutes);
-// router.use("/movies", movieRoutes);
 
-// export default router;
+const routes = Router()
+
+routes.use("/auth", authRoutes)
+
+
+export default routes;
