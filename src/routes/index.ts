@@ -13,5 +13,6 @@ routes.use("/movie", movieRoutes)
 routes.use("/review", reviewRoutes)
 routes.use("/comment", commentRoutes)
 
+      
 
 export default routes;
