@@ -2,9 +2,15 @@ import express from "express";
 import * as CommentController from "./comment.controller";
 import { auth } from "../../middlewares/auth.middleware";
 
-const router = express.Router();
+const commentRoutes = express.Router();
 
 // create comment / reply
-router.post("/", auth("USER", "ADMIN"), CommentController.createComment);
+commentRoutes.post("/", auth("USER", "ADMIN"), CommentController.createComment);
 
-export default router;
+// get comments by review
+commentRoutes.get("/:reviewId", CommentController.getCommentsByReview);
+
+// delete own comment
+commentRoutes.delete("/:id", auth("USER", "ADMIN"), CommentController.deleteComment);
+
+export default commentRoutes;
