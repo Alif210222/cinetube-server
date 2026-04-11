@@ -15,7 +15,7 @@ app.use(cors());
 app.use(cookieParser())
 
 // application routes
-app.use('/api/v1', routes);
+app.use('/', routes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello from Apollo Gears World!');
