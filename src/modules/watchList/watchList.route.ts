@@ -2,27 +2,29 @@ import express from "express";
 import * as WatchlistController from "./watchList.controller";
 import { auth } from "../../middlewares/auth.middleware";
 
-const router = express.Router();
+const watchListRoutes = express.Router();
 
 // add to watchlist
-router.post(
+watchListRoutes.post(
   "/:movieId",
   auth("USER"),
   WatchlistController.addToWatchlist
 );
 
 // get my watchlist
-router.get(
+watchListRoutes.get(
   "/my-watchlist",
   auth("USER"),
   WatchlistController.getMyWatchlist
 );
 
+
+
 // remove from watchlist
-router.delete(
+watchListRoutes.delete(
   "/:movieId",
   auth("USER"),
   WatchlistController.removeFromWatchlist
 );
 
-export default router;
+export default watchListRoutes;
