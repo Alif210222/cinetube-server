@@ -6,6 +6,8 @@ import reviewRoutes from "../modules/review/review.route";
 import commentRoutes from "../modules/comment/comment.route";
 import likeRoutes from "../modules/like/like.route";
 import watchListRoutes from "../modules/watchList/watchList.route";
+import paymentRoutes from "../modules/payment/payment.route";
+import subRoutes from "../modules/subscription/sub.route";
 
 
 const routes = Router()
@@ -16,6 +18,8 @@ routes.use("/review", reviewRoutes)
 routes.use("/comment", commentRoutes)
 routes.use("/like",likeRoutes)
 routes.use("/watchList",watchListRoutes)
+routes.use("/payment", paymentRoutes)
+routes.use("/subscription", subRoutes)
 
       
 

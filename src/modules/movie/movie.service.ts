@@ -42,6 +42,8 @@ export const getAllMovies = async (query: any) => {
     sortBy,
     page = 1,
     limit = 10,
+    priceType,
+    sortByPrice
   } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -62,6 +64,11 @@ export const getAllMovies = async (query: any) => {
       has: genre,
     };
   }
+
+  //pricing filter
+  if (priceType) {
+  where.priceType = priceType;
+}
 
   // 📺 Platform filter
   if (platform) {
@@ -84,6 +91,24 @@ export const getAllMovies = async (query: any) => {
 
   if (sortBy === "reviews") {
     orderBy = { totalReviews: "desc" };
+  }
+
+  if (priceType) {
+  where.priceType = "FREE";
+}
+
+// SORT BY ASSESNDING AND DESCENDING 
+// Price Low → High / High → Low
+  if (sortByPrice === "asc") {
+    orderBy = {
+      price: "asc",
+    };
+  }
+
+  if (sortByPrice === "desc") {
+    orderBy = {
+      price: "desc",
+    };
   }
 
   const movies = await prisma.movie.findMany({

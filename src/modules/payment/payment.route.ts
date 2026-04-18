@@ -2,18 +2,18 @@ import express from "express";
 import * as PaymentController from "./payment.controller";
 import { auth } from "../../middlewares/auth.middleware";
 
-const router = express.Router();
+const paymentRoutes = express.Router();
 
-router.post(
+paymentRoutes.post(
   "/checkout-session",
   auth("USER", "ADMIN"),
   PaymentController.createCheckoutSession
 );
 
-router.get(
+paymentRoutes.get(
   "/history",
   auth("USER", "ADMIN"),
   PaymentController.getPaymentHistory
 );
 
-export default router;
+export default paymentRoutes;
