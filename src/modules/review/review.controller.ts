@@ -12,7 +12,7 @@ export const createReview = async (req: any, res: Response) => {
 
   res.status(201).json({
     success: true,
-    message: "Review submitted for approval",
+    message: "Review submitted !",
     data: result,
   });
 };

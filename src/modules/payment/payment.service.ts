@@ -41,7 +41,7 @@ export const buyMovie = async (
       ],
 
       success_url:
-        `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        `${process.env.CLIENT_URL}/payment-success?title=${movie.slug}&session_id={CHECKOUT_SESSION_ID}`,
 
       cancel_url:
         `${process.env.CLIENT_URL}/movie/${movie.slug}`,
@@ -56,6 +56,25 @@ export const buyMovie = async (
   return {
     url: session.url,
   };
+};
+
+
+// get payment history for a user
+export const checkMovieAccess = async (
+  userId: string,
+  movieId: string
+) => {
+  const payment =
+    await prisma.payment.findFirst({
+      where: {
+        userId,
+        movieId,
+        status: "SUCCEEDED",
+        type: "PURCHASE",
+      },
+    });
+
+  return !!payment;
 };
 
 

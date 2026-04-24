@@ -16,6 +16,13 @@ paymentRoutes.get(
   PaymentController.getPaymentHistory
 );
 
+// get purchase details for a movie
+paymentRoutes.get(
+  "/check-access/:movieId",
+  auth("USER", "ADMIN"),
+  PaymentController.checkMovieAccess
+);
+
 // NEW => after successful payment, Stripe will send a webhook to this endpoint and we will handle the webhook in the controller.
 paymentRoutes.post(
   "/webhook",

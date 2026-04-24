@@ -24,6 +24,26 @@ export const buyMovie = async (
 };
 
 
+// get purchase movies for a user
+export const checkMovieAccess = async (
+  req: any,
+  res: Response
+) => {
+  const userId = req.user.userId;
+  const movieId = req.params.movieId;
+
+  const result =
+    await PaymentService.checkMovieAccess(
+      userId,
+      movieId
+    );
+
+  res.json({
+    success: true,
+    purchased: result,
+  });
+};
+
 
 
 export const stripeWebhook = async (
