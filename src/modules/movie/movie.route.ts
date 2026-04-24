@@ -6,10 +6,10 @@ const movieRoutes = express.Router();
 
 //  Public
 movieRoutes.get("/", MovieController.getAllMovies);
-movieRoutes.get("/:slug", MovieController.getSingleMovie);
+movieRoutes.get("/:slug",  MovieController.getSingleMovie);
 
 //  Admin only
-movieRoutes.post("/",  MovieController.createMovie);
+movieRoutes.post("/",auth("ADMIN"),  MovieController.createMovie);
 movieRoutes.patch("/:id", auth("ADMIN"), MovieController.updateMovie);
 movieRoutes.delete("/:id", auth("ADMIN"), MovieController.deleteMovie);
 

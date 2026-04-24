@@ -8,22 +8,24 @@ import routes from './routes';
 import { stripeWebhook } from './webhooks/stripe.webhook';
 
 const app: Application = express();
+app.use(cors());
+app.use(cookieParser())
+
 
 
 app.post(
-  "/api/v1/webhooks/stripe",
+  "/webhooks/stripe",
   express.raw({
     type: "application/json",
-  }),
+  }), 
+
   stripeWebhook
 );
 
 
 // parsers
 app.use(express.json());
-app.use(cors());
 
-app.use(cookieParser())
 
 // application routes
 app.use('/', routes);

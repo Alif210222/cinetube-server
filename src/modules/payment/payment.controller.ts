@@ -1,23 +1,48 @@
 import { Response } from "express";
 import * as PaymentService from "./payment.service";
 
-export const createCheckoutSession = async (
+
+
+
+export const buyMovie = async (
   req: any,
   res: Response
 ) => {
   const userId = req.user.userId;
+  const movieId = req.params.movieId;
 
   const result =
-    await PaymentService.createCheckoutSession(
+    await PaymentService.buyMovie(
       userId,
-      req.body.plan
+      movieId
     );
 
-  res.status(200).json({
+  res.json({
     success: true,
     url: result.url,
   });
 };
+
+
+
+
+export const stripeWebhook = async (
+  req: any,
+  res: Response
+) => {
+  const sig =
+    req.headers["stripe-signature"];
+
+  const result =
+    await PaymentService.handleWebhook(
+      req.body,
+      sig
+    );
+
+  res.json({ received: true });
+};
+
+
 
 export const getPaymentHistory = async (
   req: any,

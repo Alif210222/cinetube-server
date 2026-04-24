@@ -33,6 +33,152 @@ export const createMovie = async (payload: any) => {
 // ==========================
 // ✅ GET ALL MOVIES
 // ==========================
+// export const getAllMovies = async (query: any) => {
+//   const {
+//     search,
+//     genre,
+//     platform,
+//     minRating,
+//     sortBy,
+//     page = 1,
+//     limit = 10,
+//     priceType,
+//     sortByPrice
+//   } = query;
+
+//   const skip = (Number(page) - 1) * Number(limit);
+
+//    const where: any = {};
+//    const andConditions: any[] = [];
+
+//   // // 🔍 Search
+//   // if (search) {
+//   //   where.OR = [
+//   //     { title: { contains: search, mode: "insensitive" } },
+//   //     { director: { contains: search, mode: "insensitive" } },
+//   //   ];
+//   // }
+
+//   // ==========================
+//   // 🔍 SEARCH BY TITLE / DIRECTOR
+//   // ==========================
+//   if (search) {
+//     andConditions.push({
+//       OR: [
+//         {
+//           title: {
+//             contains: search,
+//             mode: "insensitive",
+//           },
+//         },
+//         {
+//           director: {
+//             contains: search,
+//             mode: "insensitive",
+//           },
+//         },
+//       ],
+//     });
+//   }
+
+//     // ==========================
+//   // 🎭 GENRE FILTER
+//   // ==========================
+//   if (genre) {
+//     andConditions.push({
+//       genres: {
+//         has: genre,
+//       },
+//     });
+//   }
+
+// // ==========================
+//   // 💰 PRICE TYPE
+//   // ==========================
+//   if (priceType) {
+//     andConditions.push({
+//       priceType,
+//     });
+//   }
+
+//   // ==========================
+//   // 📺 PLATFORM FILTER
+//   // ==========================
+//   if (platform) {
+//     andConditions.push({
+//       platform: {
+//         contains: platform,
+//         mode: "insensitive",
+//       },
+//     });
+//   }
+
+// // ==========================
+//   // ⭐ RATING FILTER
+//   // ==========================
+//   if (minRating) {
+//     andConditions.push({
+//       avgRating: {
+//         gte: Number(minRating),
+//       },
+//     });
+//   }
+
+
+
+
+
+//   // 🔃 Sorting
+//   let orderBy: any = { createdAt: "desc" };
+
+//   if (sortBy === "rating") {
+//     orderBy = { avgRating: "desc" };
+//   }
+
+//   if (sortBy === "reviews") {
+//     orderBy = { totalReviews: "desc" };
+//   }
+
+//   if (priceType) {
+//   where.priceType = "FREE";
+// }
+
+
+ 
+
+// // SORT BY ASSESNDING AND DESCENDING 
+// // Price Low → High / High → Low
+//   if (sortByPrice === "asc") {
+//     orderBy = {
+//       price: "asc",
+//     };
+//   }
+
+//   if (sortByPrice === "desc") {
+//     orderBy = {
+//       price: "desc",
+//     };
+//   }
+
+//   const movies = await prisma.movie.findMany({
+//     where,
+//     orderBy,
+//     skip,
+//     take: Number(limit),
+//   });
+
+//   const total = await prisma.movie.count({ where });
+
+//   return {
+//     meta: {
+//       page: Number(page),
+//       limit: Number(limit),
+//       total,
+//     },
+//     data: movies,
+//   };
+// };
+//-----------------------------------------------------
 export const getAllMovies = async (query: any) => {
   const {
     search,
@@ -40,50 +186,95 @@ export const getAllMovies = async (query: any) => {
     platform,
     minRating,
     sortBy,
+    sortByPrice,
+    priceType,
     page = 1,
     limit = 10,
-    priceType,
-    sortByPrice
   } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  const where: any = {};
+  const andConditions: any[] = [];
 
-  // 🔍 Search
+  // ==========================
+  // 🔍 SEARCH BY TITLE / DIRECTOR
+  // ==========================
   if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { director: { contains: search, mode: "insensitive" } },
-    ];
+    andConditions.push({
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          director: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
   }
 
-  // 🎭 Genre filter
+  // ==========================
+  // 🎭 GENRE FILTER
+  // ==========================
   if (genre) {
-    where.genres = {
-      has: genre,
-    };
+    andConditions.push({
+      genres: {
+        has: genre,
+      },
+    });
   }
 
-  //pricing filter
-  if (priceType) {
-  where.priceType = priceType;
-}
-
-  // 📺 Platform filter
+  // ==========================
+  // 📺 PLATFORM FILTER
+  // ==========================
   if (platform) {
-    where.platform = platform;
+    andConditions.push({
+      platform: {
+        contains: platform,
+        mode: "insensitive",
+      },
+    });
   }
 
-  // ⭐ Rating filter
+  // ==========================
+  // ⭐ RATING FILTER
+  // ==========================
   if (minRating) {
-    where.avgRating = {
-      gte: Number(minRating),
-    };
+    andConditions.push({
+      avgRating: {
+        gte: Number(minRating),
+      },
+    });
   }
 
-  // 🔃 Sorting
-  let orderBy: any = { createdAt: "desc" };
+  // ==========================
+  // 💰 PRICE TYPE
+  // ==========================
+  if (priceType) {
+    andConditions.push({
+      priceType,
+    });
+  }
+
+  // ==========================
+  // FINAL WHERE
+  // ==========================
+  const where =
+    andConditions.length > 0
+      ? { AND: andConditions }
+      : {};
+
+  // ==========================
+  // SORTING
+  // ==========================
+  let orderBy: any = {
+    createdAt: "desc",
+  };
 
   if (sortBy === "rating") {
     orderBy = { avgRating: "desc" };
@@ -93,24 +284,17 @@ export const getAllMovies = async (query: any) => {
     orderBy = { totalReviews: "desc" };
   }
 
-  if (priceType) {
-  where.priceType = "FREE";
-}
-
-// SORT BY ASSESNDING AND DESCENDING 
-// Price Low → High / High → Low
   if (sortByPrice === "asc") {
-    orderBy = {
-      price: "asc",
-    };
+    orderBy = { price: "asc" };
   }
 
   if (sortByPrice === "desc") {
-    orderBy = {
-      price: "desc",
-    };
+    orderBy = { price: "desc" };
   }
 
+  // ==========================
+  // QUERY
+  // ==========================
   const movies = await prisma.movie.findMany({
     where,
     orderBy,
@@ -118,7 +302,9 @@ export const getAllMovies = async (query: any) => {
     take: Number(limit),
   });
 
-  const total = await prisma.movie.count({ where });
+  const total = await prisma.movie.count({
+    where,
+  });
 
   return {
     meta: {
@@ -129,6 +315,9 @@ export const getAllMovies = async (query: any) => {
     data: movies,
   };
 };
+
+
+
 
 // ==========================
 // ✅ GET SINGLE MOVIE

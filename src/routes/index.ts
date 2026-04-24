@@ -8,11 +8,13 @@ import likeRoutes from "../modules/like/like.route";
 import watchListRoutes from "../modules/watchList/watchList.route";
 import paymentRoutes from "../modules/payment/payment.route";
 import subRoutes from "../modules/subscription/sub.route";
+import userRoute from "../modules/user/user.route";
 
 
 const routes = Router()
 
 routes.use("/auth", authRoutes)
+routes.use("/user",userRoute)
 routes.use("/movie", movieRoutes)
 routes.use("/review", reviewRoutes)
 routes.use("/comment", commentRoutes)

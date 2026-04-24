@@ -9,7 +9,8 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "stripe:webhook": "stripe listen --forward-to localhost:5000/webhooks/stripe"
   },
   "keywords": [
     "express",

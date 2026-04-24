@@ -69,7 +69,7 @@ export const getReviews = async (query: any) => {
   const { movieId } = query;
 
   const where: any = {
-    status: "APPROVED",
+    // status: "APPROVED",
   };
 
   if (movieId) {
@@ -111,12 +111,12 @@ export const updateReview = async (
     throw new AppError(403, "Unauthorized");
   }
 
-  if (review.status === "APPROVED") {
-    throw new AppError(
-      400,
-      "Cannot edit approved review"
-    );
-  }
+  // if (review.status === "APPROVED") {
+  //   throw new AppError(
+  //     400,
+  //     "Cannot edit approved review"
+  //   );
+  // }
 
   const updated = await prisma.review.update({
     where: { id: reviewId },

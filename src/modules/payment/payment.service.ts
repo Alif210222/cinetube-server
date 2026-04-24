@@ -1,23 +1,24 @@
 import {prisma} from "../../lib/prisma";
 import { stripe } from "../../config/stripe";
 
-export const createCheckoutSession = async (
-  userId: string,
-  plan: string
-) => {
-  const prices: any = {
-    MONTHLY: 999,
-    YEARLY: 7999,
-  };
 
-  const intervals: any = {
-    MONTHLY: "month",
-    YEARLY: "year",
-  };
+// bye movie 
+export const buyMovie = async (
+  userId: string,
+  movieId: string
+) => {
+  const movie =
+    await prisma.movie.findUnique({
+      where: { id: movieId },
+    });
+
+  if (!movie) {
+    throw new Error("Movie not found");
+  }
 
   const session =
     await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: "payment",
 
       payment_method_types: ["card"],
 
@@ -27,14 +28,12 @@ export const createCheckoutSession = async (
             currency: "usd",
 
             product_data: {
-              name: `${plan} Plan`,
+              name: movie.title,
             },
 
-            recurring: {
-              interval: intervals[plan],
-            },
-
-            unit_amount: prices[plan],
+            unit_amount:
+              Number(movie.price) *
+              100,
           },
 
           quantity: 1,
@@ -42,14 +41,15 @@ export const createCheckoutSession = async (
       ],
 
       success_url:
-        `${process.env.CLIENT_URL}/payment-success`,
+        `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
 
       cancel_url:
-        `${process.env.CLIENT_URL}/pricing`,
+        `${process.env.CLIENT_URL}/movie/${movie.slug}`,
 
       metadata: {
         userId,
-        plan,
+        movieId,
+        type: "PURCHASE",
       },
     });
 
@@ -57,6 +57,54 @@ export const createCheckoutSession = async (
     url: session.url,
   };
 };
+
+
+// after complete payment, save to db
+export const handleWebhook =
+  async (
+    body: any,
+    signature: any
+  ) => {
+    const endpointSecret =
+      process.env
+        .STRIPE_WEBHOOK_SECRET!;
+
+    const event =
+      stripe.webhooks.constructEvent(
+        body,
+        signature,
+        endpointSecret
+      );
+
+    if (
+      event.type ===
+      "checkout.session.completed"
+    ) {
+      const session = event.data.object;
+
+      const userId = session.metadata.userId;
+
+      const movieId = session.metadata.movieId;
+
+      const amount =session.amount_total / 100;
+
+      await prisma.payment.create({
+        data: {
+          userId,
+          movieId,
+          amount,
+          currency: "usd",
+          status: "SUCCESS",
+          type: "PURCHASE",
+          stripePaymentId:
+            session.payment_intent as string,
+        },
+      });
+    }
+
+    return true;
+  };
+
 
 export const getPaymentHistory = async (
   userId: string
