@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String           @id @default(uuid())
+  name             String
+  email            String           @unique
+  password         String
+  image            String?
+  role             Role             @default(USER)
+  membershipStatus MembershipStatus @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  comments         Comment[]
+  likes            Like[]
+  payments         Payment[]
+  reviews          Review[]
+  subscriptions    Subscription[]
+  watchlist        Watchlist[]
+
+  @@map("users")
+}
+
+model Movie {
+  id           String      @id @default(uuid())
+  title        String
+  slug         String      @unique
+  description  String
+  genres       String[]
+  releaseYear  Int
+  director     String
+  cast         String[]
+  platform     String
+  poster       String?
+  trailerUrl   String?
+  priceType    PriceType   @default(FREE)
+  price        Float?
+  avgRating    Float       @default(0)
+  totalReviews Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  payments     Payment[]
+  reviews      Review[]
+  watchlist    Watchlist[]
+
+  @@index([title])
+  @@index([genres])
+  @@map("movies")
+}
+
+model Review {
+  id        String       @id @default(uuid())
+  rating    Int
+  content   String
+  isSpoiler Boolean      @default(false)
+  tags      String[]
+  status    ReviewStatus @default(PENDING)
+  userId    String
+  movieId   String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  comments  Comment[]
+  likes     Like[]
+  movie     Movie        @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("reviews")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  userId    String
+  reviewId  String
+  parentId  String?
+  createdAt DateTime  @default(now())
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentToComment")
+  review    Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id        String       @id @default(uuid())
+  type      ReactionType @default(LIKE)
+  userId    String
+  reviewId  String
+  createdAt DateTime     @default(now())
+  review    Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@map("likes")
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  movieId   String
+  createdAt DateTime @default(now())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("watchlists")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  amount          Float
+  currency        String        @default("usd")
+  status          PaymentStatus @default(PENDING)
+  type            PaymentType
+  stripePaymentId String?
+  clientSecret    String?
+  userId          String
+  movieId         String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  movie           Movie?        @relation(fields: [movieId], references: [id])
+  user            User?         @relation(fields: [userId], references: [id])
+
+  @@index([stripePaymentId])
+  @@map("payments")
+}
+
+model Subscription {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  stripeCustomerId String?
+  stripeSubId      String?   @unique
+  plan             String
+  status           String
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@map("subscriptions")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MembershipStatus {
+  FREE
+  PREMIUM
+  BANNED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  RENT
+  PURCHASE
+}
+
+enum PriceType {
+  FREE
+  PREMIUM
+}
+
+enum ReactionType {
+  LIKE
+}

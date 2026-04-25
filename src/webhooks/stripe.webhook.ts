@@ -30,8 +30,7 @@ export const stripeWebhook = async (
       event.type ===
       "checkout.session.completed"
     ) {
-      const session =
-        event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object as any;
 
       const metadata = session.metadata || {};
       const type = metadata.type;
@@ -164,8 +163,7 @@ export const stripeWebhook = async (
       event.type ===
       "customer.subscription.deleted"
     ) {
-      const sub =
-        event.data.object as Stripe.Subscription;
+      const sub = event.data.object as any;
 
       const subscription =
         await prisma.subscription.updateMany({

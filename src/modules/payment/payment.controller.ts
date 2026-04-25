@@ -46,24 +46,24 @@ export const checkMovieAccess = async (
 
 
 
-export const stripeWebhook = async (
-  req: any,
-  res: Response
-) => {
-  const sig =
-    req.headers["stripe-signature"];
+// export const stripeWebhook = async (
+//   req: any,
+//   res: Response
+// ) => {
+//   const sig =
+//     req.headers["stripe-signature"];
 
-  const result =
-    await PaymentService.handleWebhook(
-      req.body,
-      sig
-    );
+//   const result =
+//     await PaymentService.handleWebhook(
+//       req.body,
+//       sig
+//     );
 
-  res.json({ received: true });
-};
+//   res.json({ received: true });
+// };
 
 
-
+// get payment history for a single user
 export const getPaymentHistory = async (
   req: any,
   res: Response
@@ -72,6 +72,20 @@ export const getPaymentHistory = async (
     await PaymentService.getPaymentHistory(
       req.user.userId
     );
+
+  res.json({
+    success: true,
+    data: result,
+  });
+};
+
+
+export const getAllPaymentHistory = async (
+  req: any,
+  res: Response
+) => {
+  const result =
+    await PaymentService.getAllPaymentHistory();
 
   res.json({
     success: true,

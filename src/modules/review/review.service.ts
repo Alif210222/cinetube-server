@@ -17,7 +17,7 @@ const updateMovieRating = async (movieId: string) => {
   const avgRating =
     totalReviews === 0
       ? 0
-      : reviews.reduce((sum, r) => sum + r.rating, 0) /
+      : reviews.reduce((sum :number, r:any) => sum + r.rating, 0) /
         totalReviews;
 
   await prisma.movie.update({

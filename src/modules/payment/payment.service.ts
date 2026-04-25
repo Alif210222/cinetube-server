@@ -79,60 +79,103 @@ export const checkMovieAccess = async (
 
 
 // after complete payment, save to db
-export const handleWebhook =
-  async (
-    body: any,
-    signature: any
-  ) => {
-    const endpointSecret =
-      process.env
-        .STRIPE_WEBHOOK_SECRET!;
 
-    const event =
-      stripe.webhooks.constructEvent(
-        body,
-        signature,
-        endpointSecret
-      );
+// export const handleWebhook =
+//   async (
+//     body: any,
+//     signature: any
+//   ) => {
+//     const endpointSecret =
+//       process.env
+//         .STRIPE_WEBHOOK_SECRET!;
 
-    if (
-      event.type ===
-      "checkout.session.completed"
-    ) {
-      const session = event.data.object;
+//     const event =
+//       stripe.webhooks.constructEvent(
+//         body,
+//         signature,
+//         endpointSecret
+//       );
 
-      const userId = session.metadata.userId;
-
-      const movieId = session.metadata.movieId;
-
-      const amount =session.amount_total / 100;
-
-      await prisma.payment.create({
-        data: {
-          userId,
-          movieId,
-          amount,
-          currency: "usd",
-          status: "SUCCESS",
-          type: "PURCHASE",
-          stripePaymentId:
-            session.payment_intent as string,
-        },
-      });
-    }
-
-    return true;
-  };
+//     if (
+//       event.type ===
+//       "checkout.session.completed"
+//     ) {
 
 
+
+
+//       const session = event.data.object;
+
+//       const metadata = session.metadata || {};
+
+//       const userId = metadata.userId;
+
+//       const movieId = metadata.movieId;
+
+
+
+//       const amount = (session.amount_total || 0) / 100;
+
+//       await prisma.payment.create({
+//         data: {
+//           userId,
+//           movieId,
+//           amount,
+//           currency: "usd",
+//           status: "SUCCEEDED",
+//           type: "PURCHASE",
+//           stripePaymentId:
+//             session.payment_intent as string,
+//         },
+//       });
+//     }
+
+//     return true;
+//   };
+
+// get payment history for a single user
 export const getPaymentHistory = async (
   userId: string
 ) => {
   return await prisma.payment.findMany({
     where: { userId },
+     include: {
+        movie: true,
+      },
 
     orderBy: {
       createdAt: "desc",
     },
   });
 };
+
+
+
+
+
+
+// get all payment history for admin
+export const getAllPaymentHistory =
+  async () => {
+    return await prisma.payment.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+
+        movie: {
+          select: {
+            title: true,
+            poster: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  };

@@ -16,6 +16,12 @@ paymentRoutes.get(
   PaymentController.getPaymentHistory
 );
 
+paymentRoutes.get(
+  "/admin-history",
+  auth("ADMIN"),
+  PaymentController.getAllPaymentHistory
+);
+
 // get purchase details for a movie
 paymentRoutes.get(
   "/check-access/:movieId",
@@ -24,10 +30,10 @@ paymentRoutes.get(
 );
 
 // NEW => after successful payment, Stripe will send a webhook to this endpoint and we will handle the webhook in the controller.
-paymentRoutes.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  PaymentController.stripeWebhook
-);
+// paymentRoutes.post(
+//   "/webhook",
+//   express.raw({ type: "application/json" }),
+//   PaymentController.stripeWebhook
+// );
 
 export default paymentRoutes;

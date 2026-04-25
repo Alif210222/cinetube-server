@@ -8,8 +8,12 @@ import routes from './routes';
 import { stripeWebhook } from './webhooks/stripe.webhook';
 
 const app: Application = express();
-app.use(cors());
+
 app.use(cookieParser())
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+}));
 
 
 
@@ -31,7 +35,7 @@ app.use(express.json());
 app.use('/', routes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello from Apollo Gears World!');
+  res.send('Hello from Cinetube World!');
 });
 
 

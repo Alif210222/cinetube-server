@@ -9,6 +9,7 @@ import watchListRoutes from "../modules/watchList/watchList.route";
 import paymentRoutes from "../modules/payment/payment.route";
 import subRoutes from "../modules/subscription/sub.route";
 import userRoute from "../modules/user/user.route";
+import adminStateRoutes from "../modules/adminStatistics/route";
 
 
 const routes = Router()
@@ -22,6 +23,7 @@ routes.use("/like",likeRoutes)
 routes.use("/watchList",watchListRoutes)
 routes.use("/payment", paymentRoutes)
 routes.use("/subscription", subRoutes)
+routes.use("/admin", adminStateRoutes)
 
       
 

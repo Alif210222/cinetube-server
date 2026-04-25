@@ -1,5 +1,7 @@
 // errors/handlePrismaError.ts
-import { Prisma } from "@prisma/client";
+
+import { Prisma } from "../generated";
+
 
 export const handlePrismaError = (error: any) => {
   let statusCode = 500;
